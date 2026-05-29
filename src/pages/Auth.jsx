@@ -8,6 +8,7 @@ import { auth, provider } from '../utils/firebase'
 import axios from 'axios'
 import { serverUrl } from '../App';
 function Auth() {
+  const dispatch = useDispatch()
 
   const handleGoogleAuth = async () => {
     try {
@@ -16,11 +17,13 @@ function Auth() {
         let name = User.displayName
         let email = User.email 
         const result = await axios.post(serverUrl + "/api/auth/google" ,
-          {name, email} , {withCredentials:true})
-        console.log(result.data)  
+        {name, email} , {withCredentials:true})
+        dispatch(setUserData(result.data))
+        
 
     }catch (error) {
          console.log(error)
+         dispatch(setUserData(null))
     }
   }
   return (
