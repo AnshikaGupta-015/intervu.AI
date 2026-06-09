@@ -12,6 +12,16 @@ import { HiSparkles } from "react-icons/hi"
 import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import AuthModel from '../components/AuthModel.jsx'
+import evalImg from "../assets/ai-ans.png"
+import hrImg from "../assets/HR.png"
+import techImg from "../assets/tech.png"
+import creditImg from "../assets/credit.png"
+import confidenceImg from "../assets/confi.png"
+import resumeImg from "../assets/resume.png"
+import pdfImg from "../assets/pdf.png"
+import analyticsImg from "../assets/history.png"
+
+
 
 function Home() {
   const {userData} = useSelector((state)=>state.user)
@@ -77,6 +87,7 @@ function Home() {
                   </motion.button>
               </div>
           </div>
+
            <div className='flex flex-col md:flex-row justify-center items-center gap-10 mb-28'>
              {
               [
@@ -108,18 +119,36 @@ function Home() {
                 className={`relative bg-white rounded-3xl border-2 border-green-100 hover:border-green-500 p-10 w-80 max-w-[90%] shadow-md hover:shadow-2xl transition-all duration-300 
                 ${index === 0 ? "rotate-[-4deg]" : ""}
                 ${index === 1 ? "rotate-[3deg] md:-mt-6 shadow-xl" : ""}
-                ${index === 2 ? "rotate-[3deg]" : ""}
+                ${index === 2 ? "rotate-[-3deg]" : ""}
                 `}>
 
                   <div className='absolute -top-8 left -1/2 -translate-x-1/2 bg-white border-2 border-green-500 text-green-600 w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg'>
                     {item.icon}
                   </div>
+                    <div className='pt-10 text-center'>
+                      <div className='text-xs text-green-600 font-semibold mb-2 tracking-wider'>{item.step}</div>
+                      <h3 className='font-semibold mb-3 text-lg'>{item.title}</h3>
+                      <p className='text-sm text-gray-500 leading-relaxed'>{item.desc}</p>
+                    </div>
 
                 </motion.div>
               ))  
              }
 
            </div>
+             
+             <div className='mb-32'>
+                <motion.h2 
+                   initial={{ opacity: 0, y: 20 }}
+                   whileInView={{ opacity: 1, y: 0 }}
+                   transition={{ duration: 0.6 }}
+                   className='text-4xl font-semibold text-center mb-16'>
+                    Advanced AI {" "}
+                    <span className="text-green-600">Capabilities</span>
+               </motion.h2>
+              </div>
+
+
       </div>
        {showAuth && <AuthModel onClose={()=>setShowAuth(false)}/>}
     </div>
