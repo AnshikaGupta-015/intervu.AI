@@ -14,8 +14,16 @@ function Step1SetUp({onStart}) {
           <motion.div 
            initial={{ x: -80, opacity:0 }}
            animate={{ x: 0, opacity:1 }}
-         t ransition={{ duration:0.7 }}
+           transition={{ duration:0.7 }}
              className='relative bg-gradient-to-br from-green-50 to-green-100 p-12 flex flex-col justify-center'>
+              <h2 className="text-4xl font-bold text-gray=800 mb-6">
+                Start Your Ai Interview
+              </h2>
+
+              <p className='text-gray-600 mb-10'>
+                Practice real interview scenarios powered by AI.
+                Improve communication, technical skills, and confidence.
+              </p>
 
           </motion.div>
 
