@@ -3,7 +3,9 @@ import React from 'react'
 function Step2Interview({interviewData , onFinish}) {
   return (
     <div>
-            step 2
+            <h2>step 2</h2>
+             
+
     </div>
   )
 }
