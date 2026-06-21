@@ -13,12 +13,8 @@ function Step2Interview({interviewData , onFinish}) {
             {/* video section */}
               <div className='w-full lg:w-[35%] bg-white flex flex-col items-center p-6 space-y-6 border-r border-gray-200'>
                  <video src=""/>
-
-
-
-
-
-                 
+                     
+                     
 
               </div>
           
