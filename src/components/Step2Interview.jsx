@@ -1,6 +1,7 @@
 import React from 'react'
 import maleVideo from "../assets/male-ai.mp4"
 import femaleVideo from "../assets/female-ai.mp4"
+import Timer from './Timer.jsx'
 
 function Step2Interview({interviewData , onFinish}) {
 
@@ -35,11 +36,25 @@ function Step2Interview({interviewData , onFinish}) {
                              AI Speaking
                           </span>
                        </div>
-                          <div className='h-px bg-gray-200'>
 
-                          </div>
+                          <div className='h-px bg-gray-200'></div>
+
                           <div className='flex justify-center'>
-                            
+                            <Timer timeLeft="30" totalTime="60"/>
+                          </div>
+
+                          <div className='h-px bg-gray-200'></div>
+
+                          <div className='grid grid-cols-2 gap-6 text-center'>
+                            <div>
+                              <span></span>
+                              <span></span>
+                            </div>
+
+                            <div>
+                              <span></span>
+                              <span></span>
+                            </div>
                           </div>
                      </div>
               </div>

@@ -1,5 +1,5 @@
 import React from 'react'
-import { buildStyles, circularProgressbar } from 'react-circular-progressbar';
+import { buildStyles, CircularProgressbar } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
 
 function Timer({ timeLeft, totalTime }) {
@@ -8,9 +8,9 @@ function Timer({ timeLeft, totalTime }) {
 
   return (
     <div className='w-20 h-20'>
-      <circularProgressbar
+      <CircularProgressbar
        value={percentage}
-      text={`${timeLeft}%`}
+      text={`${timeLeft}s`}
       styles={buildStyles({
         textSize: "28px",
         textColor: "#ef4444",
