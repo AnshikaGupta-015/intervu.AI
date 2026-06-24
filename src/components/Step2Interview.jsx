@@ -1,13 +1,129 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import maleVideo from "../assets/male-ai.mp4"
 import femaleVideo from "../assets/female-ai.mp4"
 import Timer from './Timer.jsx'
 import { motion } from "motion/react"
 import { FaMicrophone, FaMicrophoneSlash } from "react-icons/fa"
+import { useRef } from 'react'
+
 function Step2Interview({interviewData , onFinish}) {
 
       const {interviewId , questions , userName} = interviewData
+      // const {isIntroPhase, setIntroPhase} = useState(true);
+      const [isIntroPhase, setIntroPhase] = useState(true);
+      const [isMicOn, setIsMicOn] = useState(true);
 
+      // const {isMicOn, setIsMicOn} = useState(true);
+      const recognitionRef = useRef(null);
+      const [isAIPlaying, setIsAIPlaying] = useState(false);
+
+      const [currentIndex, setCurrentIndex] = useState(0);
+      const [answer, setAnswer] = useState("");
+      const [feedback, setFeedback] = useState("");
+      const [timeLeft, setTimeLeft] = useState(
+        questions[0]?.timeLimit || 60
+      );
+
+      const [selectedVoice, setSelectedVoice] = useState(null);
+      const [isSubmitting, setIsSubmitting] = useState(false);
+      const [voiceGender, setVoiceGender] = useState("female");
+      const [subtitle, setSubtitle] = useState("");
+      
+      const videoRef = useRef(null);
+
+      const currentQuestion = questions[currentIndex];
+
+      useEffect(()=>{
+         const loadVoices = () => {
+           const voices = window.speechSynthesis.getVoices();
+           if (!voices.length) return;
+
+          //  Try know femalevoices first 
+          const femaleVoice = 
+          voices.find(v =>
+            v.name.toLowerCase().includes("zira") ||
+            v.name.toLowerCase().includes("samantha") ||
+            v.name.toLowerCase().includes("female")
+          );
+
+          if (femaleVoice) {
+            setSelectedVoice(femaleVoice);
+            setVoiceGender("female");
+            return;
+          }
+
+          // Try know male voices
+          const maleVoice = 
+            voices.find(v =>
+             v.name.toLowerCase().includes("david") ||
+             v.name.toLowerCase().includes("mark") ||
+             v.name.toLowerCase().includes("male")
+            );
+
+            if (maleVoice) {
+              setSelectedVoice(maleVoice);
+              setVoiceGender("male");
+              return;
+            }
+
+            // Fallback: first voice (assume female)
+              setSelectedVoice(voices[0]);
+              setVoiceGender("female");
+        };
+
+        loadVoices();
+        window.speechSynthesis.onvoiceschanged = loadVoices;
+
+      },[])
+
+      const videoSource = voiceGender === "male" ? maleVideo : femaleVideo;
+
+      /* SPEAK FUNCTION */
+      const speakText = (text) => {
+        return new promise((resolve) => {
+          if (!window.speechSynthesis || !selectedVoice) {
+            resolve();
+            return;
+          }
+
+          window.speechSynthesis.cancel();
+
+          // Add natural pauses after commas and periods
+          const humanText = text
+           .replace(/,/g, ", ... ")
+           .replace(/\./g, ". ... ");
+
+          const utterance = new SpeechSynthesisUtterance(humanText);
+
+          utterance.voice = selectedVoice;
+
+          // Human-like pacing
+          utterance.rate = 0.92;   //slightly slower than normal
+          utterance.pitch = 1.05;  //small warmth
+          utterance.volume = 1;
+
+          utterance.onstart = () => {
+            setIsAIPlaying(true);
+            videoRef.current?.play();
+          };
+
+
+          utterance.onend = () => {
+            videoRef.current?.pause();
+            videoRef.current.currentTime = 0;
+            setIsAIPlaying(false);
+
+
+
+            setTimeout(()=>{
+                 
+            })
+
+          }
+
+
+        })
+      }
 
 
   return (
@@ -18,11 +134,14 @@ function Step2Interview({interviewData , onFinish}) {
               <div className='w-full lg:w-[35%] bg-white flex flex-col items-center p-6 space-y-6 border-r border-gray-200'>
                  <div className='w-full max-w-md rounded-2xl overflow-hidden shadow-xl'>
                     <video 
-                      src={femaleVideo}
+                      src={videoSource}
+                      key={videoSource}
+                      ref={videoRef}
                       muted
                       playsInline
                       preload="auto"
                       className="w-full h-auto object-cover"
+
                     />
                  </div>
                    {/* subtittle pending */}
@@ -34,9 +153,9 @@ function Step2Interview({interviewData , onFinish}) {
                             Interview Status
                           </span>
                           <span className='text-sm font-semibold text-emerald-600'>
-                             AI Speaking
+                            AI Speaking
                           </span>
-                       </div>
+                        </div>
 
                           <div className='h-px bg-gray-200'></div>
 
@@ -48,30 +167,38 @@ function Step2Interview({interviewData , onFinish}) {
 
                           <div className='grid grid-cols-2 gap-6 text-center'>
                             <div>
-                              <span className='text-2xl font-bold text-emerald-600'>1</span>
+                              <span className='text-2xl font-bold text-emerald-600'>
+                                {currentIndex + 1}
+                              </span>
                               <span className='text-xs text-gray-400'>Current Question</span> 
                             </div>
 
                             <div>
-                              <span className='text-2xl font-bold text-emerald-600'>5</span>
-                              <span className='text-xs text-gray-400'>Total Question</span>
+                              <span className='text-2xl font-bold text-emerald-600'>
+                                {questions.length}
+                              </span>
+                              <span className='text-xs text-gray-400'>
+                                Total Question
+                              </span>
                             </div>
                           </div>
-                     </div>
+                      </div>
               </div>
                
                {/* text section */}
-               <div className='flex-1 flex flex-col p-4 sm:p-6 md:p-8 relatives'>
+                <div className='flex-1 flex flex-col p-4 sm:p-6 md:p-8 relatives'>
                   <h2 className='text-xl sm:text-2xl font-bold text-emerald-600 mb-6'>
                      AI Smart Interview
                   </h2>
 
                   <div className='relative mb-6 bg-gray-50 p-4 sm:p-6 rounded-2xl border border-gray-200 shadow-sm'>
                      <p className='text-xs sm:text-sm text-gray-400 mb-2'>
-                       Question 1 to 5
+                       Question {currentIndex + 1} to {questions.length}
                      </p>
 
-                     <div className='text-base sm:text-lg font-semibold text-gray-800 leading-relaxed '>First Question</div>
+                     <div className='text-base sm:text-lg font-semibold text-gray-800 leading-relaxed '>
+                       {currentQuestion?.question}
+                     </div>
                   </div>
 
                   <textarea
@@ -89,11 +216,11 @@ function Step2Interview({interviewData , onFinish}) {
                     <motion.button
                      whileTap={{ scale:0.95}}
                      className='flex-1 bg-gradient-to-r from-emerald-600 to-teal-500 text-white py-3 sm:py-4 rounded-2xl shadow-lg hover:opacity-90 transition font-semibold'>
-                      Submit Answer  
+                     Submit Answer  
                     </motion.button>
 
                   </div>
-               </div>
+              </div>
         </div>    
         
              
