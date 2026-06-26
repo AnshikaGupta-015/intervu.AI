@@ -3,7 +3,9 @@ import React from 'react'
 function Step3Report({report}) {
   return (
     <div>
-      step 3
+      
+      step 3 
+
     </div>
   )
 }
