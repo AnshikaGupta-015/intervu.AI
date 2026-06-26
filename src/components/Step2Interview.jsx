@@ -7,7 +7,7 @@ import { FaMicrophone, FaMicrophoneSlash } from "react-icons/fa"
 import { useRef } from 'react'
 import axios from 'axios'
 import { serverUrl } from '../App.jsx'
-import { BsArrowLeft } from 'react-icons/bs'
+import { BsArrowRight } from 'react-icons/bs'
 
 function Step2Interview({interviewData , onFinish}) {
 
@@ -19,6 +19,8 @@ function Step2Interview({interviewData , onFinish}) {
       // const {isMicOn, setIsMicOn} = useState(true);
       const recognitionRef = useRef(null);
       const [isAIPlaying, setIsAIPlaying] = useState(false);
+      const isMicOnRef = useRef(true);
+      const isAIPlayingRef = useRef(false);
 
       const [currentIndex, setCurrentIndex] = useState(0);
       const [answer, setAnswer] = useState("");
@@ -176,7 +178,7 @@ function Step2Interview({interviewData , onFinish}) {
       useEffect(()=>{
         if(isIntroPhase)return;
         if(!currentQuestion)return;
-        if(isSubmitting)return
+       
         const timer = setInterval(() => {
           setTimeLeft((prev)=>{
             if(prev <= 1){
@@ -190,13 +192,25 @@ function Step2Interview({interviewData , onFinish}) {
 
         return ()=> clearInterval(timer)
 
-      },[isIntroPhase , currentIndex , isSubmitting])
+      },[isIntroPhase , currentIndex])
+
+      useEffect(() => {
+        if (!isIntroPhase && currentQuestion) {
+          setTimeLeft(currentQuestion.timeLimit || 60)
+        }
+      }, [currentIndex]);
 
 
       useEffect(()=>{
-        if(!("webKitSpeechRecognition" in window)) return;
+        const SpeechRecognitionAPI =
+          window.SpeechRecognition || window.webkitSpeechRecognition;
 
-        const recognition = new window.webKitSpeechRecognition();
+        if(!SpeechRecognitionAPI) {
+          console.warn("Speech recognition NOT supported in this browser/context.");
+          return;
+        }
+
+        const recognition = new SpeechRecognitionAPI();
         recognition.lang = "en-US";
         recognition.continuous = true;
         recognition.interimResults = false;
@@ -205,7 +219,26 @@ function Step2Interview({interviewData , onFinish}) {
           const transcript = 
            event.results[event.results.length -1][0].transcript;
 
+           console.log("Recognized:", transcript);
            setAnswer((prev) => prev + "" + transcript);
+        };
+
+        recognition.onstart = () => {
+          console.log("Mic recognition STARTED");
+        };
+
+        recognition.onerror = (event) => {
+          console.log("Speech recognition error:", event.error);
+        };
+
+        recognition.onend = () => {
+          // browser auto-stops recognition after a pause / timeout
+          // restart it automatically if mic is supposed to be on and AI isn't speaking
+          if (isMicOnRef.current && !isAIPlayingRef.current) {
+            try {
+              recognition.start();
+            } catch { }
+          }
         };
 
         recognitionRef.current = recognition;
@@ -235,6 +268,14 @@ function Step2Interview({interviewData , onFinish}) {
         }
         setIsMicOn(!isMicOn)
       };
+
+      useEffect(() => {
+        isMicOnRef.current = isMicOn;
+      }, [isMicOn]);
+
+      useEffect(() => {
+        isAIPlayingRef.current = isAIPlaying;
+      }, [isAIPlaying]);
 
 
       const submitAnswer = async () => {
@@ -271,7 +312,7 @@ function Step2Interview({interviewData , onFinish}) {
           return;
          }
 
-         await speakTrxt("Alright, let's move to the next question.");
+         await speakText("Alright, let's move to the next question.");
 
          setCurrentIndex(currentIndex + 1);
          setTimeout(() => { 
@@ -302,11 +343,20 @@ function Step2Interview({interviewData , onFinish}) {
          if (!currentQuestion) return;
 
          if(timeLeft === 0 && !isSubmitting && !feedback) {
-          handleSubmit();
+          submitAnswer();
          }
       }, [timeLeft]);
 
-      useEffect
+      useEffect(() => {
+         return () => {
+          if (recognitionRef.current) {
+            recognitionRef.current.stop();
+            recognitionRef.current.abort();
+          }
+
+          window.speechSynthesis.cancel()
+         };
+      }, [])
       
 
 
@@ -399,17 +449,17 @@ function Step2Interview({interviewData , onFinish}) {
 
                   <textarea
                     placeholder="Type your answer here..."
-                    onChange={(e)=>setAnswer(e.target.valye)}
+                    onChange={(e)=>setAnswer(e.target.value)}
                     value={answer}
                     className="flex-1 bg-gray-100 p-4 sm:p-6 rounded-2xl resize-none outline-none border border-gray-200 focus:ring-2 focus:ring-emerald-500 transition text-gray-800"
                   />
 
-                  {feedback ? (<div className='flex items-center gap-4 mt-6'>
+                  {!feedback ? (<div className='flex items-center gap-4 mt-6'>
                     <motion.button
                      onClick={toggleMic}
                      whileTap={{ scale:0.9}}
                      className='w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-full bg-black text-white shadow-lg'>
-                      {isMicOn ? <FaMicrophone size={20}/> : <FaMicrophoneSlash size={20}/> } 
+                      {(isMicOn && !isAIPlaying) ? <FaMicrophone size={20}/> : <FaMicrophoneSlash size={20}/> } 
                     </motion.button>
 
                     <motion.button
@@ -427,7 +477,7 @@ function Step2Interview({interviewData , onFinish}) {
                        <button
                         onClick={handleNext}
                         className='w-full bg-gradient-to-r from-emerald-600 to-teal-500 text-white py-3 rounded-xl shadow-md hover:opacity-90 transition flex items-center justify-center gap-1'>
-                        Next Question <BsArrowLeft size={18}/>
+                        Next Question <BsArrowRight size={18}/>
                        </button>
                     </motion.div>
                   )}

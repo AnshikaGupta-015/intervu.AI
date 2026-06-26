@@ -60,7 +60,10 @@ function Step1SetUp({onStart}) {
          const result = await axios.post(serverUrl +"/api/interview/generate-questions", {role, experience, mode , resumeText, projects, skills }, {withCredentials: true})
          console.log(result.data)
          if(userData){
-          dispatch(setUserData({...userData , credits: result.data.creditsLeft}))
+          // FIX: schema/redux field is "credit" (singular), not "credits" — was writing
+          // to a brand new "credits" key that the UI never reads, so the displayed
+          // number never changed.
+          dispatch(setUserData({...userData , credit: result.data.creditsLeft}))
          }
          setLoading(false)
          onStart(result.data)
@@ -250,4 +253,4 @@ function Step1SetUp({onStart}) {
   )
 }
 
-export default Step1SetUp  
+export default Step1SetUp
