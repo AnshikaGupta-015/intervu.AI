@@ -85,6 +85,10 @@ function Step3Report({report}) {
         currentY += 15;
 
         //  Final Score Box
+        doc.setFillColor(240, 253, 244);
+        doc.roundedRect(margin, currentY, contentWidth, 20, 4, 4, "F");
+
+        
 
       }
 
