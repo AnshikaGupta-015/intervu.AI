@@ -143,7 +143,7 @@ function Step3Report({report}) {
 
         // question table
 
-        autiTable(doc, {
+        autoTable(doc, {
           startY: currentY,
           margin: { left:margin, right: margin },
           head: [["#", "Question", "Score", "Feedback"]],
@@ -177,7 +177,7 @@ function Step3Report({report}) {
         doc.save("AI_Interview_Report.pdf")
       };
 
-      
+
   return (
     <div className='min-h-screen bg-linear-to-br from-gray-50 to-green-50 px-4 sm:px-6 lg:px-10 py-8'>
       <div className='mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
@@ -200,7 +200,10 @@ function Step3Report({report}) {
         </div>
       
         
-        <button className='bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl shadow-md transition-all duration-300 font-semibold text-sm sm:text-base text-nowrap'>Download Pdf</button>
+        <button 
+         onClick={downloadPDF}
+         className='bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl shadow-md transition-all duration-300 font-semibold text-sm sm:text-base text-nowrap'>Download Pdf
+        </button>
 
       </div>
 
