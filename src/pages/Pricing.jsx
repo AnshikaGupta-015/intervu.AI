@@ -2,10 +2,14 @@ import React, { useState } from 'react'
 import { FaArrowLeft, FaCheckCircle } from 'react-icons/fa'
 import { useNavigate } from 'react-router-dom'
 import { motion } from "motion/react";
+import axios from "axios"
+import { serverUrl } from '../App';
+
 
 function Pricing() {
    const navigate = useNavigate()
-   const [selectedPlan, setSelecetedPlan] = useState("free");
+   const [selectedPlan, setSelectedPlan] = useState("free");
+   const [loadingPlan, setLoadingPlan] = useState(null);
 
    const plans = [
     {
@@ -49,7 +53,50 @@ function Pricing() {
        ],
        badge: "Best Value",
     },
-   ]
+   ];
+
+
+   const handlePayment = async (plan) => {
+        try {
+           setLoadingPlan(plan.id)
+
+           const amount = 
+           plan.id === "basic" ? 100 :
+           plan.id === "pro" ? 500 : 0;
+
+           const result = await axios.post(serverUrl + "/api/payment/order" , {
+             planId: plan.id,
+             amount: amount,
+             credit: plan.credit,
+           }, {withCredentials: true})
+           console.log(result.data)
+
+           const options = {
+              key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+              amount: result.data.amount,
+              currency: "INR",
+              name: "Intervu.AI",
+              description: `${plan.name} - ${plan.credit} Credit`,
+              order_id: result.data.id,
+
+              handler:async function (response) {
+                console.log(response)
+              },
+              theme:{
+                color: "#10b981",
+              },
+            }
+
+            const rzp = new window.Razorpay(options)
+            rzp.open()
+
+            setLoadingPlan(null);
+        } catch (error) {
+           console.log(error)
+           setLoadingPlan(null);
+          
+        } 
+   }
 
   return (
     <div className='min-h-screen bg-gradient-to-br from-gray-50 to-emerald-50 py-16 px-6'>
@@ -75,21 +122,21 @@ function Pricing() {
       </div>
 
 
-      <div className='grid md:grid-cols-3 ig:grid-cols-3 gap-8 max-w-6xl mx-auto'>
+      <div className='grid md:grid-cols-3 lg:grid-cols-3 gap-8 max-w-6xl mx-auto'>
         {plans.map((plan)=>{
           const isSelected = selectedPlan === plan.id
 
           return(
             <motion.div key={plan.id}
               whileHover={!plan.default && {scale:1.03}}
-              onClick={()=>!plan.default && setSelecetedPlan(plan.id)}
+              onClick={()=>!plan.default && setSelectedPlan(plan.id)}
               className={`relative rounded-3xl p-8 transition-all duration-300 border
                 ${
                   isSelected
                    ? "border-emerald-600 shadow-2xl bg-white"
                    : "border-gray-200 bg-white shadow-md"
                 }
-                 {plan.default ? "cursor-default" : "cursor-pointer"}
+                 ${plan.default ? "cursor-default" : "cursor-pointer"}
                 `}
               >
 
@@ -102,7 +149,7 @@ function Pricing() {
 
                 {/* Default Tag  */}
                 {plan.default && (
-                  <div className='absolute top-6 right-6 bg-gray-200 text-gray-700 text-xs px-3py-1 rounded-full'>
+                  <div className='absolute top-6 right-6 bg-gray-200 text-gray-700 text-xs px-3 py-1 rounded-full'>
                      Default
                   </div>
                 )}
@@ -123,7 +170,7 @@ function Pricing() {
                  </div>
 
                  {/* Description */}
-                 <p className='text-gray=500 mt-4 text-sm leading-relaxed'>
+                 <p className='text-gray-500 mt-4 text-sm leading-relaxed'>
                    {plan.description}
                  </p>
 
@@ -141,14 +188,27 @@ function Pricing() {
                  </div>
 
                  {!plan.default && 
-                   <button className={`w-full mt-8 py-3 rounded-xl font-semibold transition 
+                   <button
+                     disabled ={loadingPlan === plan.id}
+                     onClick={(e)=>{e.stopPropagation();
+                       if(!isSelected){
+                         setSelectedPlan(plan.id)
+                       }else{
+                        handlePayment(plan)
+                       }
+                     }}
+                    className={`w-full mt-8 py-3 rounded-xl font-semibold transition 
                     ${
                       isSelected
                        ? "bg-emerald-600 text-white hover:opacity-90"
                        : "bg-gray-100 text-gray-700 hover:bg-emerald-50"
                     }`}>
 
-                      {isSelected? "Proceed to Pay" : "Select Plan"}
+                      { loadingPlan === plan.id
+                         ? "Processing..."
+                         : isSelected
+                         ? "Proceed to Pay" 
+                         : "Select Plan"}
                     </button>
                  }
 
